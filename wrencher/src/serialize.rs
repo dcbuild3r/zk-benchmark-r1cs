@@ -1,23 +1,38 @@
-use crate::models::{Matrix, SnarkjsZkeyFile};
+use crate::models::{Matrix, SnarkJsWitnessFile, SnarkjsZkeyFile};
 use serde::Serialize;
 use std::path::PathBuf;
 
+#[allow(unused)]
+pub fn serialize_zkey_file(
+    data: &SnarkjsZkeyFile,
+    output: &PathBuf,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let output_data = serde_json::to_string_pretty(data)?;
+    std::fs::write(output, output_data)?;
+    Ok(())
+}
+
 #[derive(Serialize, Debug)]
-pub struct SerializeZkeyFile {
+pub struct SerializedSnarkJs<'a> {
     pub num_public: usize,
     pub num_variables: usize,
     pub num_constraints: usize,
-    pub A: Vec<Matrix>,
-    pub B: Vec<Matrix>,
-    pub C: Vec<Matrix>,
+    pub a: Vec<Matrix>,
+    pub b: Vec<Matrix>,
+    pub c: Vec<Matrix>,
+    #[serde(flatten)]
+    pub witness: &'a SnarkJsWitnessFile,
 }
 
-pub fn convert_to_serialize_format(input: &SnarkjsZkeyFile) -> SerializeZkeyFile {
+pub fn convert_to_serialize_format<'a>(
+    zkey: &'a SnarkjsZkeyFile,
+    witness: &'a SnarkJsWitnessFile,
+) -> SerializedSnarkJs<'a> {
     let mut a = Vec::new();
     let mut b = Vec::new();
     let mut c = Vec::new();
 
-    for coef in &input.coefficients {
+    for coef in &zkey.coefficients {
         let entry = Matrix {
             constraint: coef.data.constraint,
             signal: coef.data.signal,
@@ -32,22 +47,22 @@ pub fn convert_to_serialize_format(input: &SnarkjsZkeyFile) -> SerializeZkeyFile
         }
     }
 
-    SerializeZkeyFile {
-        num_public: input.num_public,
-        num_variables: input.num_variables,
+    SerializedSnarkJs {
+        num_public: zkey.num_public,
+        num_variables: zkey.num_variables,
         num_constraints: a.len(),
-        A: a,
-        B: b,
-        C: c,
+        a,
+        b,
+        c,
+        witness,
     }
 }
 
-pub fn serialize_zkey_file(
-    data: &SnarkjsZkeyFile,
+pub fn serialize_snarkjs(
+    serialized: &SerializedSnarkJs,
     output: &PathBuf,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let serialize_data = convert_to_serialize_format(data);
-    let output_data = serde_json::to_string_pretty(&serialize_data)?;
+    let output_data = serde_json::to_string_pretty(&serialized)?;
     std::fs::write(output, output_data)?;
     Ok(())
 }

@@ -13,6 +13,11 @@ pub struct SnarkjsZkeyFile {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct SnarkJsWitnessFile {
+    pub witness: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Matrix {
     pub constraint: usize,
     pub signal: usize,
