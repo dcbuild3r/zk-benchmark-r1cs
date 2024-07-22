@@ -4,7 +4,7 @@
 CIRCUIT_NAME="multiplier"
 DESCRIPTION='"Multiplies two numbers."'
 
-circom ${CIRCUIT_NAME}/${CIRCUIT_NAME}.circom --r1cs --O1 --wasm --output ${CIRCUIT_NAME}
+circom ${CIRCUIT_NAME}/${CIRCUIT_NAME}.circom -l ${CIRCUIT_NAME}/node_modules --r1cs --O1 --wasm --output ${CIRCUIT_NAME}
 
 snarkjs r1cs export json ${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs ${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs.json
 
