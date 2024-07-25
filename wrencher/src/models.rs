@@ -47,7 +47,7 @@ pub struct R1CSFile {
     #[serde(rename = "nConstraints")]
     pub num_constraints: usize,
     #[serde(rename = "useCustomGates")]
-    pub use_custom_gates: bool,
+    pub use_custom_gates: Option<bool>,
     pub constraints: Vec<Vec<HashMap<String, String>>>,
     pub map: Vec<usize>,
 }
