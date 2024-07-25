@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@zk-email/circuits": "^6.1.3"
+  }
+}
