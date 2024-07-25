@@ -13,13 +13,13 @@ pub struct SerializedSnarkJs<'a> {
     pub a: Vec<Matrix>,
     pub b: Vec<Matrix>,
     pub c: Vec<Matrix>,
-    pub witness: &'a SnarkJsWitnessFile,
+    pub witnesses: &'a Vec<SnarkJsWitnessFile>,
 }
 
 /// Serializes the SnarkJS zkey and witness files to a format that can be used by the wrencher library
-pub fn convert_zkey_witness_to_serialize_format<'a>(
+pub fn convert_zkey_witnesses_to_serialize_format<'a>(
     zkey: &'a SnarkjsZkeyFile,
-    witness: &'a SnarkJsWitnessFile,
+    witnesses: &'a Vec<SnarkJsWitnessFile>,
 ) -> SerializedSnarkJs<'a> {
     let mut a = Vec::new();
     let mut b = Vec::new();
@@ -47,14 +47,14 @@ pub fn convert_zkey_witness_to_serialize_format<'a>(
         a,
         b,
         c,
-        witness,
+        witnesses,
     }
 }
 
-/// Converts the R1CS and witness files to a serialized format that can be understood by the benchmarking tool
-pub fn convert_r1cs_witness_to_serialize_format<'a>(
+/// Converts an R1CS file with several witness files to a serialized format that can be understood by the benchmarking tool
+pub fn convert_r1cs_witnesses_to_serialize_format<'a>(
     r1cs: &R1CSFile,
-    witness: &'a SnarkJsWitnessFile,
+    witnesses: &'a Vec<SnarkJsWitnessFile>,
 ) -> SerializedSnarkJs<'a> {
     let mut a = Vec::new();
     let mut b = Vec::new();
@@ -73,7 +73,7 @@ pub fn convert_r1cs_witness_to_serialize_format<'a>(
         a,
         b,
         c,
-        witness,
+        witnesses,
     }
 }
 

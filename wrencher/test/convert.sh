@@ -40,7 +40,7 @@ build_and_serialize_circuit() {
 
     cd ../
 
-    cargo run --release -- ser-r1cs --r1cs-path ./test/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs.json --witness-path ./test/${CIRCUIT_NAME}/witness.wtns.json --output ./test/${CIRCUIT_NAME}/${CIRCUIT_NAME}_wrencher.json
+    cargo run --release -- ser-r1cs --r1cs-path ./test/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs.json --witness-dir ./test/${CIRCUIT_NAME}/ --output ./test/${CIRCUIT_NAME}/${CIRCUIT_NAME}_wrencher.json
 
     rm -rf ./test/${CIRCUIT_NAME}/witness.wtns.json
     rm -rf ./test/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs.json
