@@ -1,4 +1,4 @@
-use crate::models::{Matrix, R1CSFile, SnarkJsWitnessFile, SnarkjsZkeyFile};
+use crate::models::{Matrix, R1CSFile, SnarkJsWitnessFile};
 use crate::r1cs::check_r1cs_satisfiability;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, path::PathBuf};
@@ -15,41 +15,6 @@ pub struct SerializedSnarkJs {
     pub b: Vec<Matrix>,
     pub c: Vec<Matrix>,
     pub witnesses: Vec<SnarkJsWitnessFile>,
-}
-
-/// Serializes the SnarkJS zkey and witness files to a format that can be used by the wrencher library
-pub fn convert_zkey_witnesses_to_serialize_format(
-    zkey: SnarkjsZkeyFile,
-    witnesses: Vec<SnarkJsWitnessFile>,
-) -> SerializedSnarkJs {
-    let mut a = Vec::new();
-    let mut b = Vec::new();
-    let mut c = Vec::new();
-
-    for coef in &zkey.coefficients {
-        let entry = Matrix {
-            constraint: coef.data.constraint,
-            signal: coef.data.signal,
-            value: coef.data.value.clone(),
-        };
-
-        match coef.matrix {
-            0 => a.push(entry),
-            1 => b.push(entry),
-            2 => c.push(entry),
-            _ => {} // Ignore any other values
-        }
-    }
-
-    SerializedSnarkJs {
-        num_public: zkey.num_public,
-        num_variables: zkey.num_variables,
-        num_constraints: a.len(),
-        a,
-        b,
-        c,
-        witnesses,
-    }
 }
 
 /// Converts an R1CS file with several witness files to a serialized format that can be understood by the benchmarking tool
@@ -117,17 +82,6 @@ pub fn serialize_r1cs(
     output: &PathBuf,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let output_data = serde_json::to_string_pretty(&serialized)?;
-    std::fs::write(output, output_data)?;
-    Ok(())
-}
-
-/// Serializes the SnarkJS zkey file to a JSON file
-#[allow(unused)]
-pub fn serialize_zkey_file(
-    data: &SnarkjsZkeyFile,
-    output: &PathBuf,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let output_data = serde_json::to_string_pretty(data)?;
     std::fs::write(output, output_data)?;
     Ok(())
 }

@@ -23,7 +23,7 @@ mod r1cs;
 mod serialize;
 
 use clap::{Parser, Subcommand};
-use deserialize::{deserialize_r1cs_json, deserialize_witnesses_json, deserialize_zkey_json};
+use deserialize::{deserialize_r1cs_json, deserialize_witnesses_json};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -35,19 +35,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    #[command(name = "ser-zkey")]
-    SerializeSnarkJsWithWitnessesZkey {
-        /// expects output of snarkjs zkej (exports the zkey file to a JSON file)
-        #[arg(short, long)]
-        zkey_path: PathBuf,
-
-        /// expects a JSON output with a vector of all the witness values (strings)
-        #[arg(short, long)]
-        witness_dir: PathBuf,
-
-        #[arg(short, long)]
-        output: PathBuf,
-    },
+    /// Serialize a r1cs and witness file to a format that can be used by the wrencher library, it also checks if the constraints are satisfied
     #[command(name = "ser-r1cs")]
     SerializeSnarkJsWithWitnessesR1cs {
         /// expects output of snarkjs zkej (exports the zkey file to a JSON file)
@@ -67,18 +55,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::SerializeSnarkJsWithWitnessesZkey {
-            zkey_path,
-            witness_dir,
-            output,
-        } => {
-            let zkey = deserialize_zkey_json(zkey_path)?;
-            let witnesses = deserialize_witnesses_json(witness_dir)?;
-
-            let serialized = serialize::convert_zkey_witnesses_to_serialize_format(zkey, witnesses);
-
-            serialize::serialize_snarkjs(&serialized, output).unwrap();
-        }
         Commands::SerializeSnarkJsWithWitnessesR1cs {
             r1cs_path,
             witness_dir,
