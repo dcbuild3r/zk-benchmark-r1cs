@@ -122,6 +122,6 @@ mod tests {
         "#;
 
         let data: super::SerializedSnarkJs = serde_json::from_str(data).unwrap();
-        assert_eq!(super::check_r1cs_satisfiability(&data), true);
+        assert!(super::check_r1cs_satisfiability(&data));
     }
 }
