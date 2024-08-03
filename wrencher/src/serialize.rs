@@ -8,13 +8,18 @@ use std::{collections::HashMap, path::PathBuf};
 /// It contains the number of public inputs, variables, constraints and the a, b, c matrices as well as the witness values.
 #[derive(Deserialize, Serialize, Debug)]
 pub struct SerializedSnarkJs {
+    pub constraints: Constraints,
+    pub witnesses: Vec<SnarkJsWitnessFile>,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct Constraints {
     pub num_public: usize,
     pub num_variables: usize,
     pub num_constraints: usize,
     pub a: Vec<Matrix>,
     pub b: Vec<Matrix>,
     pub c: Vec<Matrix>,
-    pub witnesses: Vec<SnarkJsWitnessFile>,
 }
 
 /// Converts an R1CS file with several witness files to a serialized format that can be understood by the benchmarking tool
@@ -33,12 +38,14 @@ pub fn convert_r1cs_witnesses_to_serialize_format(
     }
 
     let result = SerializedSnarkJs {
-        num_public: r1cs.num_pub_inputs + r1cs.num_outputs,
-        num_variables: r1cs.num_variables,
-        num_constraints: r1cs.num_constraints,
-        a,
-        b,
-        c,
+        constraints: Constraints {
+            num_public: r1cs.num_pub_inputs + r1cs.num_outputs,
+            num_variables: r1cs.num_variables,
+            num_constraints: r1cs.num_constraints,
+            a,
+            b,
+            c,
+        },
         witnesses,
     };
 

@@ -2,7 +2,10 @@ use std::{collections::HashMap, str::FromStr};
 
 use ruint::{aliases::U256, uint, Uint};
 
-use crate::{models::Matrix, serialize::SerializedSnarkJs};
+use crate::{
+    models::{Matrix, SnarkJsWitnessFile},
+    serialize::{Constraints, SerializedSnarkJs},
+};
 
 /// An element of the BN254 scalar field Fr.
 ///
@@ -14,9 +17,10 @@ pub type FieldElement = U256;
 pub const MODULUS: FieldElement =
     uint!(21888242871839275222246405745257275088548364400416034343698204186575808495617_U256);
 
-pub fn check_r1cs_satisfiability(data: &SerializedSnarkJs) -> bool {
-    let witness = &data.witnesses[0]; // Assuming we're checking the first witness
-
+pub fn check_r1cs_satisfiability_single(
+    constraints: &Constraints,
+    witness: &SnarkJsWitnessFile,
+) -> bool {
     let mut a_map: HashMap<usize, HashMap<usize, FieldElement>> = HashMap::new();
     let mut b_map: HashMap<usize, HashMap<usize, FieldElement>> = HashMap::new();
     let mut c_map: HashMap<usize, HashMap<usize, FieldElement>> = HashMap::new();
@@ -35,9 +39,9 @@ pub fn check_r1cs_satisfiability(data: &SerializedSnarkJs) -> bool {
     };
 
     // Populate the hashmaps
-    populate_map(&mut a_map, &data.a);
-    populate_map(&mut b_map, &data.b);
-    populate_map(&mut c_map, &data.c);
+    populate_map(&mut a_map, &constraints.a);
+    populate_map(&mut b_map, &constraints.b);
+    populate_map(&mut c_map, &constraints.c);
 
     // Function to compute dot product
     let dot_product =
@@ -48,7 +52,7 @@ pub fn check_r1cs_satisfiability(data: &SerializedSnarkJs) -> bool {
         };
 
     // Check each constraint
-    for i in 0..data.num_constraints {
+    for i in 0..constraints.num_constraints {
         let a_result = dot_product(a_map.get(&i).unwrap_or(&HashMap::new()), &witness);
         let b_result = dot_product(b_map.get(&i).unwrap_or(&HashMap::new()), &witness);
         let c_result = dot_product(c_map.get(&i).unwrap_or(&HashMap::new()), &witness);
@@ -64,6 +68,15 @@ pub fn check_r1cs_satisfiability(data: &SerializedSnarkJs) -> bool {
     true
 }
 
+pub fn check_r1cs_satisfiability(data: &SerializedSnarkJs) -> bool {
+    for witness in data.witnesses.iter() {
+        if !check_r1cs_satisfiability_single(&data.constraints, witness) {
+            return false;
+        }
+    }
+    true
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -72,30 +85,32 @@ mod tests {
         // 3 * 5 = 15
         let data = r#"
         {
-            "num_public" : 2,
-            "num_variables" : 2,
-            "num_constraints": 1,
-            "a": [
-                {
-                    "constraint": 0,
-                    "signal": 1,
-                    "value": "1"
-                }
-            ],
-            "b": [
-                {
-                    "constraint": 0,
-                    "signal": 2,
-                    "value": "1"
-                }
-            ],
-            "c": [
-                {
-                    "constraint": 0,
-                    "signal": 3,
-                    "value": "1"
-                }
-            ],
+            "constraints": {
+                "num_public" : 2,
+                "num_variables" : 2,
+                "num_constraints": 1,
+                "a": [
+                    {
+                        "constraint": 0,
+                        "signal": 1,
+                        "value": "1"
+                    }
+                ],
+                "b": [
+                    {
+                        "constraint": 0,
+                        "signal": 2,
+                        "value": "1"
+                    }
+                ],
+                "c": [
+                    {
+                        "constraint": 0,
+                        "signal": 3,
+                        "value": "1"
+                    }
+                ]
+            }, 
             "witnesses": [
                 ["1", "3", "5", "15"]
             ]

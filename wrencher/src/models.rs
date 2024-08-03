@@ -4,7 +4,7 @@ use std::collections::HashMap;
 // Updated witness file structure
 pub type SnarkJsWitnessFile = Vec<String>;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Matrix {
     pub constraint: usize,
     pub signal: usize,
