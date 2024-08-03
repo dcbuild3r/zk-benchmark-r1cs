@@ -15,9 +15,7 @@ Cargo.lock
 
 # Generated files by wrencher
 rsa_wrencher_r1cs.json
-rsa_wrencher_zkey.json
 multiplier_wrencher_r1cs.json
-multiplier_wrencher_zkey.json
 
 
 .DS_Store
