@@ -19,6 +19,7 @@
 
 mod deserialize;
 mod models;
+mod r1cs;
 mod serialize;
 
 use clap::{Parser, Subcommand};
