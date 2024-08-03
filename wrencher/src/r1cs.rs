@@ -43,8 +43,8 @@ pub fn check_r1cs_satisfiability(data: &SerializedSnarkJs) -> bool {
     let dot_product =
         |map: &HashMap<usize, FieldElement>, witness: &[FieldElement]| -> FieldElement {
             map.iter()
-                .map(|(&signal, value)| value * &witness[signal])
-                .fold(FieldElement::ZERO, |acc, x| acc + x)
+                .map(|(&signal, value)| value.mul_mod(witness[signal], MODULUS))
+                .fold(FieldElement::ZERO, |acc, x| acc.add_mod(x, MODULUS))
         };
 
     // Check each constraint
@@ -53,7 +53,7 @@ pub fn check_r1cs_satisfiability(data: &SerializedSnarkJs) -> bool {
         let b_result = dot_product(b_map.get(&i).unwrap_or(&HashMap::new()), &witness);
         let c_result = dot_product(c_map.get(&i).unwrap_or(&HashMap::new()), &witness);
 
-        if a_result * b_result != c_result {
+        if a_result.mul_mod(b_result, MODULUS) != c_result {
             println!("Constraint {} is not satisfied:", i);
             println!("LHS (A * witness * B * witness): {}", a_result * b_result);
             println!("RHS (C * witness): {}", c_result);

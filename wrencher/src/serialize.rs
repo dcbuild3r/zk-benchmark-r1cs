@@ -77,7 +77,10 @@ pub fn convert_r1cs_witnesses_to_serialize_format(
         witnesses,
     };
 
-    assert!(check_r1cs_satisfiability(&result));
+    assert!(
+        check_r1cs_satisfiability(&result),
+        "r1cs constraints are not satisfied"
+    );
 
     result
 }
