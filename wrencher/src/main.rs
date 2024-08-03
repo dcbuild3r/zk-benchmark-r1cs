@@ -75,8 +75,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let zkey = deserialize_zkey_json(zkey_path)?;
             let witnesses = deserialize_witnesses_json(witness_dir)?;
 
-            let serialized =
-                serialize::convert_zkey_witnesses_to_serialize_format(&zkey, &witnesses);
+            let serialized = serialize::convert_zkey_witnesses_to_serialize_format(zkey, witnesses);
 
             serialize::serialize_snarkjs(&serialized, output).unwrap();
         }
@@ -89,7 +88,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let witnesses = deserialize_witnesses_json(witness_dir)?;
 
             let serialized =
-                serialize::convert_r1cs_witnesses_to_serialize_format(&r1cs, &witnesses);
+                serialize::convert_r1cs_witnesses_to_serialize_format(&r1cs, witnesses);
 
             serialize::serialize_snarkjs(&serialized, output).unwrap();
         }

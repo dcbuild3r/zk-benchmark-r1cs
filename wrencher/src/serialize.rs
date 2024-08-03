@@ -1,26 +1,27 @@
 use crate::models::{Matrix, R1CSFile, SnarkJsWitnessFile, SnarkjsZkeyFile};
-use serde::Serialize;
+use crate::r1cs::check_r1cs_satisfiability;
+use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, path::PathBuf};
 
 /// Serialized output format for wrencher to use with the benchmarking tool
 ///
 /// It contains the number of public inputs, variables, constraints and the a, b, c matrices as well as the witness values.
-#[derive(Serialize, Debug)]
-pub struct SerializedSnarkJs<'a> {
+#[derive(Deserialize, Serialize, Debug)]
+pub struct SerializedSnarkJs {
     pub num_public: usize,
     pub num_variables: usize,
     pub num_constraints: usize,
     pub a: Vec<Matrix>,
     pub b: Vec<Matrix>,
     pub c: Vec<Matrix>,
-    pub witnesses: &'a Vec<SnarkJsWitnessFile>,
+    pub witnesses: Vec<SnarkJsWitnessFile>,
 }
 
 /// Serializes the SnarkJS zkey and witness files to a format that can be used by the wrencher library
-pub fn convert_zkey_witnesses_to_serialize_format<'a>(
-    zkey: &'a SnarkjsZkeyFile,
-    witnesses: &'a Vec<SnarkJsWitnessFile>,
-) -> SerializedSnarkJs<'a> {
+pub fn convert_zkey_witnesses_to_serialize_format(
+    zkey: SnarkjsZkeyFile,
+    witnesses: Vec<SnarkJsWitnessFile>,
+) -> SerializedSnarkJs {
     let mut a = Vec::new();
     let mut b = Vec::new();
     let mut c = Vec::new();
@@ -52,10 +53,10 @@ pub fn convert_zkey_witnesses_to_serialize_format<'a>(
 }
 
 /// Converts an R1CS file with several witness files to a serialized format that can be understood by the benchmarking tool
-pub fn convert_r1cs_witnesses_to_serialize_format<'a>(
+pub fn convert_r1cs_witnesses_to_serialize_format(
     r1cs: &R1CSFile,
-    witnesses: &'a Vec<SnarkJsWitnessFile>,
-) -> SerializedSnarkJs<'a> {
+    witnesses: Vec<SnarkJsWitnessFile>,
+) -> SerializedSnarkJs {
     let mut a = Vec::new();
     let mut b = Vec::new();
     let mut c = Vec::new();
@@ -66,15 +67,19 @@ pub fn convert_r1cs_witnesses_to_serialize_format<'a>(
         process_constraint(&mut c, &constraint[2], constraint_idx);
     }
 
-    SerializedSnarkJs {
-        num_variables: r1cs.num_variables,
+    let result = SerializedSnarkJs {
         num_public: r1cs.num_pub_inputs + r1cs.num_outputs,
+        num_variables: r1cs.num_variables,
         num_constraints: r1cs.num_constraints,
         a,
         b,
         c,
         witnesses,
-    }
+    };
+
+    assert!(check_r1cs_satisfiability(&result));
+
+    result
 }
 
 /// Processes the R1CS constraints, separates a, b and c coefficients and adds them to the corresponding vector

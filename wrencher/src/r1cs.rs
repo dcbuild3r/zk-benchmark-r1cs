@@ -14,7 +14,7 @@ pub type FieldElement = U256;
 pub const MODULUS: FieldElement =
     uint!(21888242871839275222246405745257275088548364400416034343698204186575808495617_U256);
 
-pub fn check_r1cs_satisfaction(data: &SerializedSnarkJs) -> bool {
+pub fn check_r1cs_satisfiability(data: &SerializedSnarkJs) -> bool {
     let witness = &data.witnesses[0]; // Assuming we're checking the first witness
 
     let mut a_map: HashMap<usize, HashMap<usize, FieldElement>> = HashMap::new();
@@ -62,4 +62,47 @@ pub fn check_r1cs_satisfaction(data: &SerializedSnarkJs) -> bool {
     }
 
     true
+}
+
+#[cfg(test)]
+mod tests {
+
+    #[test]
+    fn test_r1cs_satisfiability() {
+        // 3 * 5 = 15
+        let data = r#"
+        {
+            "num_public" : 2,
+            "num_variables" : 2,
+            "num_constraints": 1,
+            "a": [
+                {
+                    "constraint": 0,
+                    "signal": 1,
+                    "value": "1"
+                }
+            ],
+            "b": [
+                {
+                    "constraint": 0,
+                    "signal": 2,
+                    "value": "1"
+                }
+            ],
+            "c": [
+                {
+                    "constraint": 0,
+                    "signal": 3,
+                    "value": "1"
+                }
+            ],
+            "witnesses": [
+                ["1", "3", "5", "15"]
+            ]
+        }
+        "#;
+
+        let data: super::SerializedSnarkJs = serde_json::from_str(data).unwrap();
+        assert_eq!(super::check_r1cs_satisfiability(&data), true);
+    }
 }
