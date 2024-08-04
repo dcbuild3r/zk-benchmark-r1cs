@@ -14,6 +14,7 @@ Cargo.lock
 *.pdb
 
 # Generated files by wrencher
+*_wrencher.json
 rsa_wrencher_r1cs.json
 multiplier_wrencher_r1cs.json
 

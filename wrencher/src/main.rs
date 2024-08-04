@@ -1,4 +1,4 @@
-//! This is a tool to convert the output of snarkjs zkey and witness files to a format
+//! This is a tool to convert the output of snarkjs r1cs and witness files to a format
 //! that can be used by the wrencher library for generating benchmark datasets
 //! for client side provers.
 //!
@@ -8,11 +8,6 @@
 //!
 //! The tool can be used by running the following command:
 //!
-//! - To serialize a zkey and witness file to a format that can be used by the wrencher library:
-//! ```bash
-//! wrencher ser-zkey --zkey-path <path-to-zkey-export-file> --witness-dir <path-to-witness-directory> --output <output-file>     
-//!
-//! - To serialize a r1cs and witness file to a format that can be used by the wrencher library:
 //! ```bash
 //! wrencher ser-r1cs --r1cs-path <path-to-r1cs-export-file> --witness-dir <path-to-witness-dir> --output <output-file>
 //! ```

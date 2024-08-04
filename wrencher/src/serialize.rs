@@ -1,5 +1,7 @@
 use crate::models::{Matrix, R1CSFile, SnarkJsWitnessFile};
-use crate::r1cs::check_r1cs_satisfiability;
+use crate::r1cs::{
+    check_r1cs_satisfiability, compute_witness_bound_constraints, WitnessBoundConstraints,
+};
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, path::PathBuf};
 
@@ -10,6 +12,7 @@ use std::{collections::HashMap, path::PathBuf};
 pub struct SerializedSnarkJs {
     pub constraints: Constraints,
     pub witnesses: Vec<SnarkJsWitnessFile>,
+    pub constrained_witnesses: Vec<WitnessBoundConstraints>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
@@ -37,24 +40,30 @@ pub fn convert_r1cs_witnesses_to_serialize_format(
         process_constraint(&mut c, &constraint[2], constraint_idx);
     }
 
-    let result = SerializedSnarkJs {
-        constraints: Constraints {
-            num_public: r1cs.num_pub_inputs + r1cs.num_outputs,
-            num_variables: r1cs.num_variables,
-            num_constraints: r1cs.num_constraints,
-            a,
-            b,
-            c,
-        },
-        witnesses,
+    let constraints = Constraints {
+        num_public: r1cs.num_pub_inputs + r1cs.num_outputs,
+        num_variables: r1cs.num_variables,
+        num_constraints: r1cs.num_constraints,
+        a,
+        b,
+        c,
     };
 
+    let constrained_witnesses = witnesses
+        .iter()
+        .map(|witness| compute_witness_bound_constraints(&constraints, witness))
+        .collect::<Vec<_>>();
+
     assert!(
-        check_r1cs_satisfiability(&result),
+        check_r1cs_satisfiability(&constrained_witnesses),
         "r1cs constraints are not satisfied"
     );
 
-    result
+    SerializedSnarkJs {
+        constraints,
+        witnesses,
+        constrained_witnesses,
+    }
 }
 
 /// Processes the R1CS constraints, separates a, b and c coefficients and adds them to the corresponding vector
