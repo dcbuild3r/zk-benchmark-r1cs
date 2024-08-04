@@ -1,61 +1,32 @@
-use crate::models::{Matrix, R1CSFile, SnarkJsWitnessFile, SnarkjsZkeyFile};
-use serde::Serialize;
+use crate::models::{Matrix, R1CSFile, SnarkJsWitnessFile};
+use crate::r1cs::check_r1cs_satisfiability;
+use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, path::PathBuf};
 
 /// Serialized output format for wrencher to use with the benchmarking tool
 ///
 /// It contains the number of public inputs, variables, constraints and the a, b, c matrices as well as the witness values.
-#[derive(Serialize, Debug)]
-pub struct SerializedSnarkJs<'a> {
+#[derive(Deserialize, Serialize, Debug)]
+pub struct SerializedSnarkJs {
+    pub constraints: Constraints,
+    pub witnesses: Vec<SnarkJsWitnessFile>,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct Constraints {
     pub num_public: usize,
     pub num_variables: usize,
     pub num_constraints: usize,
     pub a: Vec<Matrix>,
     pub b: Vec<Matrix>,
     pub c: Vec<Matrix>,
-    pub witnesses: &'a Vec<SnarkJsWitnessFile>,
-}
-
-/// Serializes the SnarkJS zkey and witness files to a format that can be used by the wrencher library
-pub fn convert_zkey_witnesses_to_serialize_format<'a>(
-    zkey: &'a SnarkjsZkeyFile,
-    witnesses: &'a Vec<SnarkJsWitnessFile>,
-) -> SerializedSnarkJs<'a> {
-    let mut a = Vec::new();
-    let mut b = Vec::new();
-    let mut c = Vec::new();
-
-    for coef in &zkey.coefficients {
-        let entry = Matrix {
-            constraint: coef.data.constraint,
-            signal: coef.data.signal,
-            value: coef.data.value.clone(),
-        };
-
-        match coef.matrix {
-            0 => a.push(entry),
-            1 => b.push(entry),
-            2 => c.push(entry),
-            _ => {} // Ignore any other values
-        }
-    }
-
-    SerializedSnarkJs {
-        num_public: zkey.num_public,
-        num_variables: zkey.num_variables,
-        num_constraints: a.len(),
-        a,
-        b,
-        c,
-        witnesses,
-    }
 }
 
 /// Converts an R1CS file with several witness files to a serialized format that can be understood by the benchmarking tool
-pub fn convert_r1cs_witnesses_to_serialize_format<'a>(
+pub fn convert_r1cs_witnesses_to_serialize_format(
     r1cs: &R1CSFile,
-    witnesses: &'a Vec<SnarkJsWitnessFile>,
-) -> SerializedSnarkJs<'a> {
+    witnesses: Vec<SnarkJsWitnessFile>,
+) -> SerializedSnarkJs {
     let mut a = Vec::new();
     let mut b = Vec::new();
     let mut c = Vec::new();
@@ -66,15 +37,24 @@ pub fn convert_r1cs_witnesses_to_serialize_format<'a>(
         process_constraint(&mut c, &constraint[2], constraint_idx);
     }
 
-    SerializedSnarkJs {
-        num_variables: r1cs.num_variables,
-        num_public: r1cs.num_pub_inputs + r1cs.num_outputs,
-        num_constraints: r1cs.num_constraints,
-        a,
-        b,
-        c,
+    let result = SerializedSnarkJs {
+        constraints: Constraints {
+            num_public: r1cs.num_pub_inputs + r1cs.num_outputs,
+            num_variables: r1cs.num_variables,
+            num_constraints: r1cs.num_constraints,
+            a,
+            b,
+            c,
+        },
         witnesses,
-    }
+    };
+
+    assert!(
+        check_r1cs_satisfiability(&result),
+        "r1cs constraints are not satisfied"
+    );
+
+    result
 }
 
 /// Processes the R1CS constraints, separates a, b and c coefficients and adds them to the corresponding vector
@@ -109,17 +89,6 @@ pub fn serialize_r1cs(
     output: &PathBuf,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let output_data = serde_json::to_string_pretty(&serialized)?;
-    std::fs::write(output, output_data)?;
-    Ok(())
-}
-
-/// Serializes the SnarkJS zkey file to a JSON file
-#[allow(unused)]
-pub fn serialize_zkey_file(
-    data: &SnarkjsZkeyFile,
-    output: &PathBuf,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let output_data = serde_json::to_string_pretty(data)?;
     std::fs::write(output, output_data)?;
     Ok(())
 }

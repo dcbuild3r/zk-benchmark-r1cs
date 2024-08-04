@@ -40,13 +40,13 @@ build_and_serialize_circuit() {
 
     cd ../
 
-    cargo run --release -- ser-r1cs --r1cs-path ./test/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs.json --witness-dir ./test/${CIRCUIT_NAME}/ --output ./test/${CIRCUIT_NAME}/${CIRCUIT_NAME}_wrencher.json
+    cargo run --release -- ser-r1cs --r1cs-path ./tests/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs.json --witness-dir ./tests/${CIRCUIT_NAME}/ --output ./tests/${CIRCUIT_NAME}/${CIRCUIT_NAME}_wrencher.json
 
-    rm -rf ./test/${CIRCUIT_NAME}/witness.wtns.json
-    rm -rf ./test/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs.json
-    rm -rf ./test/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs
-    rm -rf ./test/${CIRCUIT_NAME}/${CIRCUIT_NAME}_js
-    rm -rf ./test/${CIRCUIT_NAME}/witness.wtns
+    rm -rf ./tests/${CIRCUIT_NAME}/witness.wtns.json
+    rm -rf ./tests/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs.json
+    rm -rf ./tests/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs
+    rm -rf ./tests/${CIRCUIT_NAME}/${CIRCUIT_NAME}_js
+    rm -rf ./tests/${CIRCUIT_NAME}/witness.wtns
 
     echo "Circuit ${CIRCUIT_NAME}: (${DESCRIPTION}) built and serialized successfully."
 }
@@ -56,7 +56,7 @@ DESCRIPTION="RSA circuit"
 
 build_and_serialize_circuit $CIRCUIT_NAME $DESCRIPTION
 
-cd test
+cd tests
 
 CIRCUIT_NAME="multiplier"
 DESCRIPTION="Multiplier circuit"

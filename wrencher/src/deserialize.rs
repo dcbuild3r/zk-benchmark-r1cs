@@ -1,18 +1,10 @@
-use models::{R1CSFile, SnarkJsWitnessFile, SnarkjsZkeyFile};
+use models::{R1CSFile, SnarkJsWitnessFile};
 use std::{
     fs,
     path::{Path, PathBuf},
 };
 
 use crate::models;
-
-pub fn deserialize_zkey_json(
-    input: &PathBuf,
-) -> Result<SnarkjsZkeyFile, Box<dyn std::error::Error>> {
-    let input_data = std::fs::read_to_string(input)?;
-    let zkey_file: SnarkjsZkeyFile = serde_json::from_str(&input_data)?;
-    Ok(zkey_file)
-}
 
 /// Deserializes the witness file
 pub fn deserialize_witnesses_json(
