@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     models::{Matrix, SnarkJsWitnessFile},
-    serialize::{Constraints, SerializedSnarkJs},
+    serialize::Constraints,
 };
 
 /// An element of the BN254 scalar field Fr.
@@ -100,18 +100,23 @@ pub fn check_r1cs_satisfiability_single(
     (true, WitnessBoundConstraints { az, bz, cz })
 }
 
-pub fn check_r1cs_satisfiability(constrained_witnesses: &Vec<WitnessBoundConstraints>) -> bool {
-    for constrained_witness in constrained_witnesses.into_iter() {
+pub fn check_r1cs_satisfiability(constrained_witnesses: &[WitnessBoundConstraints]) -> bool {
+    for constrained_witness in constrained_witnesses.iter() {
         let (satisfied, _) = check_r1cs_satisfiability_single(constrained_witness);
         if !satisfied {
             return false;
         }
     }
+
+    println!("All constraints are satisfied!");
     true
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::{models::SnarkJsWitnessFile, serialize::Constraints};
+
+    use serde::Deserialize;
 
     #[test]
     fn test_r1cs_satisfiability() {
@@ -154,7 +159,13 @@ mod tests {
         }
         "#;
 
-        let data: super::SerializedSnarkJs = serde_json::from_str(data).unwrap();
+        #[derive(Deserialize)]
+        struct ConstraintsWithWitnesses {
+            constraints: Constraints,
+            witnesses: Vec<SnarkJsWitnessFile>,
+        }
+
+        let data: ConstraintsWithWitnesses = serde_json::from_str(data).unwrap();
         let constraints = &data.constraints;
         let witnesses = &data.witnesses;
         let constrained_witnesses = witnesses
