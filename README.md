@@ -13,15 +13,6 @@ Download or generate the corresponding witness file for the r1cs file. run `snar
 cargo run --release -- ser-r1cs --r1cs-path <path_to_r1cs_export_file> --witness <path_to_witness_export_file> --output output.json
 ```
 
-Download an example zkey file, run `snarkjs zkej [circuit_final.zkey] [circuit_final.zkey.json]` to convert a zkey file a json file which the convert command can understand.
-
-Download or generate the corresponding witness file for the zkey file. run `snarkjs wtns export json [witness.wtns] [witnes.json]` to convert a witness file a json file which the convert command can understand.
-
-```bash
-# Zkey + Witness -> JSON
-cargo run --release -- ser-zkey --zkey-path <path_to_zkey_file> --witness <path_to_witness_export_file> --output output.json
-```
-
 ## Example
 
 The `convert.sh` script in the `test/` directory will convert example `mulitplier.circom` and `rsa.circom` corresponding r1cs and witness files into a wrencher json file.
